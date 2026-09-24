@@ -1,0 +1,72 @@
+spring:
+  application:
+    name: ai-service
+
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: tinyllama
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 6s
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2s
+
+server:
+  port: 8090
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 30
+    initial-instance-info-replication-interval-seconds: 30
+
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+    lease-renewal-interval-seconds: 15
+    lease-expiration-duration-seconds: 40
+    metadata-map:
+      app-name: ${info.app.name}
+      version: ${info.app.version}
+      environment: ${info.app.environment}
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
+  info:
+    env:
+      enabled: true
+
+logging:
+  level:
+    root: warn                       # ⚡ Menos carga en consola
+    org.springframework: info
+
+info:
+  app:
+    name: ai-service
+    title: Servicio de Inteligencia Artificial
+    description: "Servicio basado en inteligencia artificial para la automatización de tareas y procesamiento de datos."
+    version: 1.0.0
+    author: Ricardo Terrazas
+    environment: desarrollo
+    license: Proprietary
+    contact:
+      email: ricardo.terrazasramos@gmail.com
+    tags: inteligencia artificial, IA generativa, automatización, procesamiento de datos
+    dependencies: Spring Boot, Spring WebFlux, Spring AI (Ollama), Redis, Eureka, Actuator, Prometheus
+

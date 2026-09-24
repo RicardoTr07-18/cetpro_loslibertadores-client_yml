@@ -1,0 +1,98 @@
+spring:
+  application:
+    name: finance-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/Finance
+    username: postgres
+    password: 1234
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000 # 10 minutos
+
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000
+    connect-timeout: 2000
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      catalogService:
+        registerHealthIndicator: true
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        ignoreExceptions:
+          - feign.FeignException$NotFound
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 30
+    initial-instance-info-replication-interval-seconds: 30
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+    lease-renewal-interval-seconds: 15
+    lease-expiration-duration-seconds: 40
+    metadata-map:
+      app-name: ${info.app.name}
+      version: ${info.app.version}
+      environment: ${info.app.environment}
+
+server:
+  port: 8083
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
+  info:
+    env:
+      enabled: true
+
+logging:
+  level:
+    root: warn                       # ⚡ Menos carga en consola
+    org.springframework: info
+
+app:
+  images:
+    path: ../assets   # ⚡ Ubicacion de la carpeta raiz para las imagenes
+
+info:
+  app:
+    name: finance-service
+    title: Servicio de Finanzas
+    description: Gestión financiera del sistema. Maneja transacciones, reportes y se integra con el catálogo para obtener información de productos.
+    version: 1.0.0
+    author: Ricardo Terrazas
+    environment: desarrollo
+    license: Proprietary
+    contact:
+      email: ricardo.terrazasramos@gmail.com
+    tags: finanzas, transacciones, reportes, integracion, cache
+    dependencies: Spring Boot, Spring MVC, Spring Data JPA, PostgreSQL, Spring Cache, Redis, Spring Cloud OpenFeign, Eureka, Resilience4j, AOP, Actuator, Prometheus

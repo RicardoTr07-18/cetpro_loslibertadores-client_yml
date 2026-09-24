@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: api-gateway
+
+  main:
+    lazy-initialization: true        # ⚡ Carga diferida de beans para arrancar más rápido
+    banner-mode: off
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+  cloud:
+    config:
+      request-read-timeout: 2000
+      retry:
+        max-attempts: 2
+        initial-interval: 1000
+
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      server:
+        webflux:
+          routes:
+            # --- Auth Microservice ---
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/auth/**
+
+            # --- Catalog Microservice ---
+            - id: catalog-service
+              uri: lb://catalog-service
+              predicates:
+                - Path=/api/catalog/**
+            
+            # --- Finance Microservice ---
+            - id: finance-service
+              uri: lb://finance-service
+              predicates:
+                - Path=/api/finance/**
+
+            # --- AI Microservice ---
+            - id: ai-service
+              uri: lb://ai-service
+              predicates:
+                - Path=/api/ai/**
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 30
+    initial-instance-info-replication-interval-seconds: 30
+
+server:
+  port: 8080
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: info, health, prometheus
+  info:
+    env: 
+      enabled: true
+
+jwt:
+  secret: 08725e547914eb52b7abba9bdfe7be4a2a5e6b8d9ca977d84a20816ff4f5023c
+
+logging:
+  level:
+    root: warn
+    org.springframework: info
+
+info:
+  app:
+    name: api-gateway
+    title: Servicio API Gateway
+    description: "Puerta de enlace que enruta las solicitudes a los microservicios internos,aplica seguridad (JWT), rate limiting y observabilidad."
+    version: 1.0.0
+    author: Ricardo Terrazas
+    environment: desarrollo
+    license: Proprietary
+    contact:
+      email: ricardo.terrazasramos@gmail.com
+    tags: gateway, routing, seguridad, jwt, microservicios
+    dependencies: Spring Cloud Gateway, WebFlux, Eureka, Spring Security, JWT, Prometheus
